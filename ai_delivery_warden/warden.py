@@ -52,7 +52,10 @@ def inspect_delivery(text: str) -> Report:
     return Report(score=score, status=status, findings=tuple(findings), passed=tuple(passed))
 
 
-def render_markdown(report: Report) -> str:
+def render_markdown(report: Report, lang: str = "en") -> str:
+    if lang == "zh":
+        return render_markdown_zh(report)
+
     lines: list[str] = []
     lines.append("# AI Delivery Warden Report")
     lines.append("")
@@ -96,3 +99,55 @@ def render_markdown(report: Report) -> str:
         lines.append("```")
 
     return "\n".join(lines) + "\n"
+
+
+def render_markdown_zh(report: Report) -> str:
+    lines: list[str] = []
+    lines.append("# AI 交付监工报告")
+    lines.append("")
+    lines.append(f"- 状态：**{report.status}**")
+    lines.append(f"- 分数：**{report.score}/100**")
+    lines.append(f"- 问题数：**{len(report.findings)}**")
+    lines.append("")
+
+    if report.findings:
+        lines.append("## 问题清单")
+        lines.append("")
+        for idx, finding in enumerate(report.findings, 1):
+            rule = finding.rule
+            lines.append(f"{idx}. **[{rule.severity.upper()}] {rule.title_zh}**")
+            lines.append(f"   - 分类：`{rule.category}`")
+            lines.append(f"   - 规则：`{rule.id}`")
+            lines.append(f"   - 问题：{_message_zh(finding)}")
+            lines.append(f"   - 返工要求：{rule.advice_zh}")
+            lines.append("")
+    else:
+        lines.append("## 问题清单")
+        lines.append("")
+        lines.append("当前规则没有发现阻塞问题。")
+        lines.append("")
+
+    lines.append("## 可直接贴回 AI 的返工口令")
+    lines.append("")
+    if report.status == "PASS":
+        lines.append("```text")
+        lines.append("当前交付已通过本轮监工检查。请继续保持证据链，并在最终交付中保留验证命令、验证结果、修改文件和未验证风险。")
+        lines.append("```")
+    else:
+        lines.append("```text")
+        lines.append("停止。你的交付没有通过 AI Delivery Warden 检查。")
+        lines.append("")
+        lines.append("请按以下问题返工：")
+        for finding in report.findings:
+            lines.append(f"- {finding.rule.title_zh}: {finding.rule.advice_zh}")
+        lines.append("")
+        lines.append("返工后必须重新输出：完成内容、修改文件、真实功能说明、验收用例执行结果、验证命令、验证结果、未完成事项/风险和使用方式。")
+        lines.append("```")
+
+    return "\n".join(lines) + "\n"
+
+
+def _message_zh(finding: Finding) -> str:
+    if finding.rule.required_any:
+        return f"交付内容里没有提供相关证据：{finding.rule.title_zh}。"
+    return f"发现“{finding.rule.title_zh}”的可疑信号。"

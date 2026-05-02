@@ -53,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("file", nargs="?", help="Delivery or handoff markdown/text file to inspect.")
     parser.add_argument("--git-diff", action="store_true", help="Append current git diff to the inspection input.")
     parser.add_argument("--output", "-o", help="Write markdown report to this file.")
+    parser.add_argument("--lang", choices=("en", "zh"), default="en", help="Report language. Defaults to en.")
     args = parser.parse_args(argv)
 
     text = build_input(args)
@@ -60,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("No input. Pass a file, pipe text, or use --git-diff in a git repo.")
 
     report = inspect_delivery(text)
-    rendered = render_markdown(report)
+    rendered = render_markdown(report, lang=args.lang)
 
     if args.output:
         Path(args.output).write_text(rendered)

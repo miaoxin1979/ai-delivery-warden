@@ -2,6 +2,8 @@
 
 **A local quality gate for AI-generated product and code deliveries.**
 
+[中文说明](README.zh-CN.md)
+
 AI coding agents are fast. They also ship half-finished pages, fake buttons, missing tests, vague handoffs, accidental scope creep, and "should work" confidence without proof.
 
 AI Delivery Warden is a small local CLI that reviews an AI agent's delivery notes, handoff, and optional git diff against real-delivery rules.
@@ -34,6 +36,12 @@ Review an AI delivery note:
 
 ```bash
 warden examples/bad_delivery.md
+```
+
+Chinese report:
+
+```bash
+warden examples/bad_delivery_zh.md --lang zh
 ```
 
 Review stdin:
